@@ -29,6 +29,7 @@ public class UserDto {
     public static UserDto fromUser(User user) {
         return new UserDto(
                 user.getId(),
+                user.getClinicId(),
                 user.getEmail(),
                 user.getUserRoles(),
                 user.getName(),
@@ -40,6 +41,7 @@ public class UserDto {
     public static UserDto fromUserWithoutPrivate(User user) {
         return new UserDto(
                 user.getId(),
+                user.getClinicId(),
                 user.getUserRoles(),
                 user.getName(),
                 user.getSurname()
@@ -47,6 +49,7 @@ public class UserDto {
     }
 
     private Long id;
+    private String clinicId;
     private String email;
     private String password;
     private List<UserRoleDto> userRoles;
@@ -58,10 +61,12 @@ public class UserDto {
 
     public UserDto(
             Long id,
+            String clinicId,
             List<UserRole> userRoles,
             String name,
             String surname) {
         this.id = id;
+        this.clinicId = clinicId;
         this.userRoles = mapUserRolesToDto(userRoles);
         this.name = name;
         this.surname = surname;
@@ -69,12 +74,14 @@ public class UserDto {
 
     public UserDto(
             Long id,
+            String clinicId,
             String email,
             List<UserRole> userRoles,
             String name,
             String surname,
             String phone) {
         this.id = id;
+        this.clinicId = clinicId;
         this.email = email;
         this.userRoles = mapUserRolesToDto(userRoles);
         this.name = name;

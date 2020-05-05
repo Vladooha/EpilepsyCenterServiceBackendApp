@@ -9,8 +9,8 @@ import com.vladooha.epilepsycenterserviceappbackend.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -25,6 +25,70 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    @Nullable
+    @Transactional(readOnly = true)
+    public User findById(Long id) {
+        return userRepository.getOne(id);
+    }
+
+    @Override
+    @Nullable
+    @Transactional(readOnly = true)
+    public User findByClinicId(String clinicId) {
+        return userRepository.findByClinicId(clinicId);
+    }
+
+    @Override
+    @Nullable
+    @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findByRole(UserRole userRole) {
+        return userRepository.findByUserRolesContaining(userRole);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findPatients(User doctor) { return  userRepository.findByDoctor(doctor); }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isDoctor(User doctor) {
+        List<UserRole> userRoles = doctor.getUserRoles();
+        for (UserRole userRole : userRoles) {
+            if (UserRole.DOCTOR.equals(userRole.getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isDoctorsPatient(User doctor, User patient) {
+        if (isDoctor(doctor)) {
+            for (User doctorsPatient : doctor.getPatients()) {
+                if (doctorsPatient.getId().equals(patient.getId())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -76,27 +140,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
-    @Override
     @Nullable
     @Transactional
-    public User findById(Long id) {
-        return userRepository.getOne(id);
-    }
+    public User addPatient(User doctor, User patient) {
+        if (patient != null) {
+            if (isDoctor(patient)) {
+                return null;
+            }
 
-    @Override
-    @Nullable
-    @Transactional
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
+            patient.setDoctor(doctor);
+            doctor.getPatients().add(patient);
+        }
 
-    @Override
-    @Transactional
-    public List<User> findByRole(UserRole userRole) {
-        return userRepository.findByUserRolesContaining(userRole);
+        return patient;
     }
 }

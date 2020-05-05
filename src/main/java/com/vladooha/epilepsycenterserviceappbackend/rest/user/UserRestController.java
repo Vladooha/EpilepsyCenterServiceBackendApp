@@ -9,13 +9,11 @@ import com.vladooha.epilepsycenterserviceappbackend.security.jwt.JwtTokenProvide
 import com.vladooha.epilepsycenterserviceappbackend.service.user.UserRoleService;
 import com.vladooha.epilepsycenterserviceappbackend.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,9 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 public class UserRestController {
-    final static String API_ROOT = "/api";
+    private static final String WRONG_LOGIN_DATA = "Неверный email или пароль";
 
     private final UserService userService;
     private final UserRoleService userRoleService;
@@ -42,7 +41,7 @@ public class UserRestController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @PostMapping(value = API_ROOT + "/user/sign-up")
+    @PostMapping(value = "/users/sign-up")
     public ResponseEntity signUp(@RequestBody UserDto userDto, HttpServletResponse response) {
         User user = parseUserDto(userDto);
 
@@ -57,13 +56,13 @@ public class UserRestController {
         }
     }
 
-    @PostMapping(value = API_ROOT + "/user/log-in")
+    @PostMapping(value = "/users/log-in")
     public ResponseEntity logIn(@RequestBody UserDto userDto, HttpServletResponse response) {
         User user = parseUserDto(userDto);
         user = userService.logIn(user);
 
         if (user == null) {
-            ErrorContainer errorContainer = new ErrorContainer("Wrong login data!");
+            ErrorContainer errorContainer = new ErrorContainer(WRONG_LOGIN_DATA);
             return new ResponseEntity(errorContainer, HttpStatus.FORBIDDEN);
         }
 
@@ -74,7 +73,7 @@ public class UserRestController {
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = API_ROOT + "/user/refresh-token")
+    @GetMapping(value = "/users/refresh-token")
     public ResponseEntity refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String userEmail = jwtTokenProvider.parseAndRefreshResponseTokens(request, response);
 
@@ -85,11 +84,11 @@ public class UserRestController {
             return new ResponseEntity(userDto, HttpStatus.OK);
         }
 
-        ErrorContainer errorContainer = new ErrorContainer("Wrong refresh token!");
+        ErrorContainer errorContainer = new ErrorContainer(WRONG_LOGIN_DATA);
         return new ResponseEntity(errorContainer, HttpStatus.UNAUTHORIZED);
     }
 
-    @GetMapping(value = API_ROOT + "/user")
+    @GetMapping(value = "/users")
     public ResponseEntity getUser(Authentication authentication) {
         String email = authentication.getName();
 
@@ -100,17 +99,19 @@ public class UserRestController {
             return new ResponseEntity(userDto, HttpStatus.OK);
         }
 
-        ErrorContainer errorContainer = new ErrorContainer("Wrong login data!");
+        ErrorContainer errorContainer = new ErrorContainer(WRONG_LOGIN_DATA);
         return new ResponseEntity(errorContainer, HttpStatus.FORBIDDEN);
     }
 
-    @GetMapping(value = API_ROOT + "/user/check-status")
+    @GetMapping(value = "/users/check-status")
     public ResponseEntity<String> checkStatus() {
         return new ResponseEntity<>("Authorized!", HttpStatus.OK);
     }
 
     private User parseUserDto(UserDto userDto) {
         User user = new User();
+
+        user.setClinicId(userDto.getClinicId());
 
         user.setEmail(userDto.getEmail());
         user.setPassword(userDto.getPassword());

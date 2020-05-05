@@ -1,12 +1,19 @@
 package com.vladooha.epilepsycenterserviceappbackend.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @MappedSuperclass
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 public class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,8 +21,13 @@ public class BaseEntity {
     private Long id;
 
     @Column(name = "CREATED")
-    private Date created;
+    private LocalDateTime created;
 
     @Column(name = "UPDATED")
-    private Date updated;
+    private LocalDateTime updated;
+
+    @Override
+    public String toString() {
+        return "";
+    }
 }

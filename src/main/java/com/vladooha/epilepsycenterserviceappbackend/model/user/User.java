@@ -3,6 +3,9 @@ package com.vladooha.epilepsycenterserviceappbackend.model.user;
 import com.vladooha.epilepsycenterserviceappbackend.model.BaseEntity;
 import com.vladooha.epilepsycenterserviceappbackend.model.report.food.Product;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -11,8 +14,21 @@ import java.util.List;
 
 @Entity
 @Table(name = "USER")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 public class User extends BaseEntity {
+    @Column(name = "CLINIC_ID", unique = true)
+    @Length(min = 8)
+    private String clinicId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "DOCTOR_ID", referencedColumnName = "ID")
+    private User doctor;
+
+    @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
+    private List<User> patients;
+
     @Column(name = "EMAIL", unique = true, nullable = false)
     @Pattern(regexp = "^[^@]+@[^@]+\\.[^@]+$")
     @Length(max = 35)

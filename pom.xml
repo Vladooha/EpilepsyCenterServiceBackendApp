@@ -15,7 +15,8 @@
 	<description>Backend part for Epilepsy Center service</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 		<jsonwebtoken.version>0.9.1</jsonwebtoken.version>
 	</properties>
 

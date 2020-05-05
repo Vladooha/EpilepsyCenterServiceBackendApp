@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 enum UserErrors {
+    BAD_CLINIC_ID("ID пациента клиники занят или введён некорректно"),
     BAD_LOGIN("Некорректный логин"),
     BAD_EMAIL("Некорректный e-mail"),
     REGISTERED_EMAIL("E-mail уже зарегистрирован"),
@@ -38,11 +39,25 @@ public class UserFacade {
     public ErrorContainer validateUser(User user) {
         ErrorContainer errorContainer = new ErrorContainer();
 
+        errorContainer.concat(validateClinicId(user.getClinicId()));
         errorContainer.concat(validateEmail(user.getEmail()));
         errorContainer.concat(validatePassword(user.getPassword()));
         errorContainer.concat(validateNameAndSurname(user.getName(), user.getSurname()));
 
         return errorContainer;
+    }
+
+    private ErrorContainer validateClinicId(String clinicId) {
+        if (null == clinicId || clinicId.length() != 8) {
+            return new ErrorContainer(UserErrors.BAD_CLINIC_ID.getDescription());
+        }
+
+        User oldUser = userService.findByClinicId(clinicId);
+        if (oldUser != null) {
+            return new ErrorContainer(UserErrors.BAD_CLINIC_ID.getDescription());
+        }
+
+        return new ErrorContainer();
     }
 
     private ErrorContainer validateLogin(String login) {
